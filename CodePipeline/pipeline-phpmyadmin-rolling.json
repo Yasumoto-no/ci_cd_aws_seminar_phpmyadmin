@@ -1,0 +1,72 @@
+{
+  "pipeline": {
+    "name": "phpmyadmin-pipeline-rolling-yasumoto-0617",
+    "roleArn": "arn:aws:iam::561378667739:role/CodePipelineServiceRole-yasumoto-0617",
+    "artifactStore": {
+      "type": "S3",
+      "location": "cicd-yasumoto-0617"
+    },
+    "stages": [
+      {
+        "name": "Source",
+        "actions": [
+          {
+            "name": "Source",
+            "actionTypeId": {
+              "category": "Source",
+              "owner": "AWS",
+              "provider": "CodeStarSourceConnection",
+              "version": "1"
+              },
+            "configuration": {
+              "ConnectionArn": "arn:aws:codestar-connections:ap-northeast-1:561378667739:connection/1fe0c210-f2f9-407b-b7ed-d14cbffb3813",
+              "FullRepositoryId": "Yasumoto-no/ci_cd_aws_seminar_phpmyadmin",
+              "BranchName": "main"
+            },
+            "outputArtifacts": [{ "name": "SourceOut" }]              
+          }
+        ]
+      },
+      {
+        "name": "Build",
+        "actions": [
+          {
+            "name": "CodeBuild",
+            "actionTypeId": { 
+              "category": "Build", 
+              "owner": "AWS", 
+              "provider": "CodeBuild", 
+              "version": "1" 
+            },
+            "inputArtifacts": [{ "name": "SourceOut" }],
+            "outputArtifacts": [{ "name": "BuildOut" }],
+            "configuration": { 
+              "ProjectName": "phpmyadmin-build-yasumoto-0617" 
+            }
+          }
+        ]
+      },
+      {
+        "name": "Deploy",
+        "actions": [
+          {
+            "name": "ECS_Rolling_Deploy",
+            "actionTypeId": { 
+              "category": "Deploy",
+               "owner": "AWS",
+               "provider": "ECS",
+               "version": "1" 
+                },
+            "inputArtifacts": [{ "name": "BuildOut" }],
+            "configuration": {
+              "ClusterName": "ecs-cluster-yasumoto-0617",
+              "ServiceName": "phpmyadmin-service-yasumoto-0617",
+              "FileName": "imagedefinitions.json"
+            }
+          }
+        ]
+      }
+    ],
+    "version": 1
+  }
+}
